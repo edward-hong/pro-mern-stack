@@ -6,15 +6,16 @@
     <title>Document</title>
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
   </head>
   <body>
     <div id="content"></div>
 
-    <script>
-      const element = React.createElement(
-        'div',
-        { title: 'Outer div' },
-        React.createElement('h1', { className: 'heading' }, 'Hello World!'),
+    <script type="text/babel">
+      const element = (
+        <div title="Outer Div">
+          <h1>Hello World!</h1>
+        </div>
       )
 
       ReactDOM.render(element, document.getElementById('content'))
