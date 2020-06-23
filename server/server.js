@@ -2,30 +2,14 @@ const fs = require('fs')
 const express = require('express')
 const { GraphQLScalarType } = require('graphql')
 const { Kind } = require('graphql/language')
+const { MongoClient } = require('mongodb')
 const { ApolloServer, UserInputError } = require('apollo-server-express')
 
-let aboutMessage = 'Issue Tracker API v1.0'
+const url =
+  'mongodb+srv://edward:drowssap@issues-app-18dby.mongodb.net/issueTracker?retryWrites=true&w=majority'
+let db
 
-const issueDB = [
-  {
-    id: 1,
-    status: 'New',
-    owner: 'Ravan',
-    effort: 5,
-    created: new Date('2018-08-15'),
-    due: undefined,
-    title: 'Error in console when clicking Add',
-  },
-  {
-    id: 2,
-    status: 'Assigned',
-    owner: 'Eddie',
-    effort: 14,
-    created: new Date('2018-08-16'),
-    due: new Date('2018-08-30'),
-    title: 'Missing bottom border on panel',
-  },
-]
+let aboutMessage = 'Issue Tracker API v1.0'
 
 function setAboutMessage(_, { message }) {
   return (aboutMessage = message)
@@ -52,8 +36,9 @@ function validateIssue(issue) {
   }
 }
 
-function issueList() {
-  return issueDB
+async function issueList() {
+  const issues = await db.collection('issues').find({}).toArray()
+  return issues
 }
 
 const GraphQLDate = new GraphQLScalarType({
@@ -86,6 +71,16 @@ const resolvers = {
   GraphQLDate,
 }
 
+async function connectToDb() {
+  const client = new MongoClient(url, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  await client.connect()
+  console.log('Connected to MongoDb')
+  db = client.db()
+}
+
 const server = new ApolloServer({
   typeDefs: fs.readFileSync('./server/schema.graphql', 'utf-8'),
   resolvers,
@@ -103,4 +98,11 @@ server.applyMiddleware({ app, path: '/graphql' })
 
 const PORT = process.env.PORT || 3000
 
-app.listen(PORT, () => console.log(`App started on port ${PORT}`))
+;(async function () {
+  try {
+    await connectToDb()
+    app.listen(PORT, () => console.log(`App started on port ${PORT}`))
+  } catch (err) {
+    console.log('ERROR', err)
+  }
+})()
