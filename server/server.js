@@ -15,12 +15,26 @@ function setAboutMessage(_, { message }) {
   return (aboutMessage = message)
 }
 
-function issueAdd(_, { issue }) {
+async function getNextSequence(name) {
+  const result = await db
+    .collection('counters')
+    .findOneAndUpdate(
+      { _id: name },
+      { $inc: { current: 1 } },
+      { returnOriginal: false },
+    )
+  return result.value.current
+}
+
+async function issueAdd(_, { issue }) {
   validateIssue(issue)
   issue.created = new Date()
-  issue.id = issueDB.length + 1
-  issueDB.push(issue)
-  return issue
+  issue.id = await getNextSequence('issues')
+  const result = await db.collection('issues').insertOne(issue)
+  const savedIssue = await db
+    .collection('issues')
+    .findOne({ _id: result.insertedId })
+  return savedIssue
 }
 
 function validateIssue(issue) {
