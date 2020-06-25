@@ -1,7 +1,8 @@
+require('dotenv').config()
+
 const { MongoClient } = require('mongodb')
 
-const url =
-  'mongodb+srv://edward:drowssap@issues-app-18dby.mongodb.net/issueTracker?retryWrites=true&w=majority'
+const url = process.env.DB_URL
 
 function testWithCallbacks(callback) {
   console.log('\n--- testWithCallbacks---')
