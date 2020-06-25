@@ -1,3 +1,17 @@
+/* eslint "react/react-in-jsx-scope": "off" */
+/* globals React ReactDOM */
+/* eslint "react/jsx-no-undef": "off" */
+/* eslint "no-alert": "off" */
+
+const dateRegex = new RegExp('^\\d\\d\\d\\d-\\d\\d-\\d\\d')
+
+function jsonDateReviver(key, value) {
+  if (dateRegex.test(value)) {
+    return new Date(value)
+  }
+  return value
+}
+
 async function graphQLFetch(query, variables = {}) {
   try {
     const response = await fetch(window.ENV.UI_API_ENDPOINT, {
@@ -10,8 +24,8 @@ async function graphQLFetch(query, variables = {}) {
 
     if (result.errors) {
       const error = result.errors[0]
-      if (error.extensions.code == 'BAD_USER_INPUT') {
-        const details = errors.extensions.exception.errors.join('\n ')
+      if (error.extensions.code === 'BAD_USER_INPUT') {
+        const details = error.extensions.exception.errors.join('\n ')
         alert(`${error.message}:\n ${details}`)
       } else {
         alert(`${error.extensions.code}: ${error.message}`)
@@ -20,22 +34,15 @@ async function graphQLFetch(query, variables = {}) {
     return result.data
   } catch (e) {
     alert(`Error in sending data to server: ${e.message}`)
+    return null
   }
 }
 
+// eslint-disable-next-line react/prefer-stateless-function
 class IssueFilter extends React.Component {
   render() {
     return <div>This is a placeholder for the issue filter.</div>
   }
-}
-
-const dateRegex = new RegExp('^\\d\\d\\d\\d-\\d\\d-\\d\\d')
-
-function jsonDateReviver(key, value) {
-  if (dateRegex.test(value)) {
-    return new Date(value)
-  }
-  return value
 }
 
 const IssueRow = ({ issue }) => (
@@ -86,7 +93,8 @@ class IssueAdd extends React.Component {
       title: form.title.value,
       due: new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 10),
     }
-    this.props.createIssue(issue)
+    const { createIssue } = this.props
+    createIssue(issue)
     form.owner.value = ''
     form.title.value = ''
   }
@@ -96,7 +104,7 @@ class IssueAdd extends React.Component {
       <form name="issueAdd" onSubmit={this.handleSubmit}>
         <input type="text" name="owner" placeholder="Owner" />
         <input type="text" name="title" placeholder="Title" />
-        <button>Add</button>
+        <button type="submit">Add</button>
       </form>
     )
   }
@@ -147,12 +155,13 @@ class IssueList extends React.Component {
   }
 
   render() {
+    const { issues } = this.state
     return (
       <>
         <h1>Issue Tracker</h1>
         <IssueFilter />
         <hr />
-        <IssueTable issues={this.state.issues} />
+        <IssueTable issues={issues} />
         <hr />
         <IssueAdd createIssue={this.createIssue} />
       </>

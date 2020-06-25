@@ -26,9 +26,27 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
+/* eslint "react/react-in-jsx-scope": "off" */
+
+/* globals React ReactDOM */
+
+/* eslint "react/jsx-no-undef": "off" */
+
+/* eslint "no-alert": "off" */
+var dateRegex = new RegExp('^\\d\\d\\d\\d-\\d\\d-\\d\\d');
+
+function jsonDateReviver(key, value) {
+  if (dateRegex.test(value)) {
+    return new Date(value);
+  }
+
+  return value;
+}
+
 function graphQLFetch(_x) {
   return _graphQLFetch.apply(this, arguments);
-}
+} // eslint-disable-next-line react/prefer-stateless-function
+
 
 function _graphQLFetch() {
   _graphQLFetch = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(query) {
@@ -69,8 +87,8 @@ function _graphQLFetch() {
             if (result.errors) {
               error = result.errors[0];
 
-              if (error.extensions.code == 'BAD_USER_INPUT') {
-                details = errors.extensions.exception.errors.join('\n ');
+              if (error.extensions.code === 'BAD_USER_INPUT') {
+                details = error.extensions.exception.errors.join('\n ');
                 alert("".concat(error.message, ":\n ").concat(details));
               } else {
                 alert("".concat(error.extensions.code, ": ").concat(error.message));
@@ -83,8 +101,9 @@ function _graphQLFetch() {
             _context3.prev = 13;
             _context3.t0 = _context3["catch"](1);
             alert("Error in sending data to server: ".concat(_context3.t0.message));
+            return _context3.abrupt("return", null);
 
-          case 16:
+          case 17:
           case "end":
             return _context3.stop();
         }
@@ -114,16 +133,6 @@ var IssueFilter = /*#__PURE__*/function (_React$Component) {
 
   return IssueFilter;
 }(React.Component);
-
-var dateRegex = new RegExp('^\\d\\d\\d\\d-\\d\\d-\\d\\d');
-
-function jsonDateReviver(key, value) {
-  if (dateRegex.test(value)) {
-    return new Date(value);
-  }
-
-  return value;
-}
 
 var IssueRow = function IssueRow(_ref) {
   var issue = _ref.issue;
@@ -168,7 +177,8 @@ var IssueAdd = /*#__PURE__*/function (_React$Component2) {
         title: form.title.value,
         due: new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 10)
       };
-      this.props.createIssue(issue);
+      var createIssue = this.props.createIssue;
+      createIssue(issue);
       form.owner.value = '';
       form.title.value = '';
     }
@@ -186,7 +196,9 @@ var IssueAdd = /*#__PURE__*/function (_React$Component2) {
         type: "text",
         name: "title",
         placeholder: "Title"
-      }), /*#__PURE__*/React.createElement("button", null, "Add"));
+      }), /*#__PURE__*/React.createElement("button", {
+        type: "submit"
+      }, "Add"));
     }
   }]);
 
@@ -291,8 +303,9 @@ var IssueList = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "render",
     value: function render() {
+      var issues = this.state.issues;
       return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h1", null, "Issue Tracker"), /*#__PURE__*/React.createElement(IssueFilter, null), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement(IssueTable, {
-        issues: this.state.issues
+        issues: issues
       }), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement(IssueAdd, {
         createIssue: this.createIssue
       }));
