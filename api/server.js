@@ -13,7 +13,8 @@ let db
 let aboutMessage = 'Issue Tracker API v1.0'
 
 function setAboutMessage(_, { message }) {
-  return (aboutMessage = message)
+  aboutMessage = message
+  return aboutMessage
 }
 
 async function getNextSequence(name) {
@@ -25,17 +26,6 @@ async function getNextSequence(name) {
       { returnOriginal: false },
     )
   return result.value.current
-}
-
-async function issueAdd(_, { issue }) {
-  validateIssue(issue)
-  issue.created = new Date()
-  issue.id = await getNextSequence('issues')
-  const result = await db.collection('issues').insertOne(issue)
-  const savedIssue = await db
-    .collection('issues')
-    .findOne({ _id: result.insertedId })
-  return savedIssue
 }
 
 function validateIssue(issue) {
@@ -51,6 +41,18 @@ function validateIssue(issue) {
   }
 }
 
+async function issueAdd(_, { issue }) {
+  validateIssue(issue)
+  const newIssue = { ...issue }
+  newIssue.created = new Date()
+  newIssue.id = await getNextSequence('issues')
+  const result = await db.collection('issues').insertOne(newIssue)
+  const savedIssue = await db
+    .collection('issues')
+    .findOne({ _id: result.insertedId })
+  return savedIssue
+}
+
 async function issueList() {
   const issues = await db.collection('issues').find({}).toArray()
   return issues
@@ -64,13 +66,14 @@ const GraphQLDate = new GraphQLScalarType({
   },
   parseValue(value) {
     const dateValue = new Date(value)
-    return isNaN(dateValue) ? undefined : dateValue
+    return Number.isNaN(dateValue.getTime()) ? undefined : dateValue
   },
   parseLiteral(ast) {
     if (ast.kind === Kind.STRING) {
       const value = new Date(ast.value)
-      return isNaN(value) ? undefined : value
+      return Number.isNaN(value.getTime()) ? undefined : value
     }
+    return undefined
   },
 })
 
@@ -107,14 +110,14 @@ const server = new ApolloServer({
 
 const app = express()
 
-const enableCors = (process.env.ENABLE_CORS || 'true') == 'true'
+const enableCors = (process.env.ENABLE_CORS || 'true') === 'true'
 console.log('CORS setting:', enableCors)
 
 server.applyMiddleware({ app, path: '/graphql', cors: enableCors })
 
 const port = process.env.API_SERVER_POLL || 3000
 
-;(async function () {
+;(async function start() {
   try {
     await connectToDb()
     app.listen(port, () => console.log(`API started on port ${port}`))

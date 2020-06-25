@@ -1,5 +1,8 @@
 // mongo "mongodb+srv://issues-app-18dby.mongodb.net/issueTracker" --username edward --password drowssap scripts/init.mongo.js
 
+/* global db print */
+/* eslint no-restricted-globals: "off" */
+
 db.issues.remove({})
 
 const issuesDB = [
