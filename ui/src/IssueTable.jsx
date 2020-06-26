@@ -1,4 +1,4 @@
-/* globals React */
+import React from 'react'
 
 const IssueRow = ({ issue }) => (
   <tr>
