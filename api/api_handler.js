@@ -5,12 +5,13 @@ const { ApolloServer } = require('apollo-server-express')
 
 const GraphQLDate = require('./graphql_date')
 const { setMessage, getMessage } = require('./about')
-const { list, add } = require('./issue')
+const { list, add, get } = require('./issue')
 
 const resolvers = {
   Query: {
     about: getMessage,
     issueList: list,
+    issue: get,
   },
   Mutation: {
     setAboutMessage: setMessage,

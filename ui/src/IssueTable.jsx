@@ -1,20 +1,25 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink, withRouter } from 'react-router-dom'
 
-const IssueRow = ({ issue }) => (
-  <tr>
-    <td>{issue.id}</td>
-    <td>{issue.status}</td>
-    <td>{issue.owner}</td>
-    <td>{issue.created.toDateString()}</td>
-    <td>{issue.effort}</td>
-    <td>{issue.due ? issue.due.toDateString() : ''}</td>
-    <td>{issue.title}</td>
-    <td>
-      <Link to={`/edit/${issue.id}`}>Edit</Link>
-    </td>
-  </tr>
-)
+const IssueRow = withRouter(({ issue, location: { search } }) => {
+  const selectLocation = { pathname: `/issues/${issue.id}`, search }
+  return (
+    <tr>
+      <td>{issue.id}</td>
+      <td>{issue.status}</td>
+      <td>{issue.owner}</td>
+      <td>{issue.created.toDateString()}</td>
+      <td>{issue.effort}</td>
+      <td>{issue.due ? issue.due.toDateString() : ''}</td>
+      <td>{issue.title}</td>
+      <td>
+        <Link to={`/edit/${issue.id}`}>Edit</Link>
+        {' | '}
+        <NavLink to={selectLocation}>Select</NavLink>
+      </td>
+    </tr>
+  )
+})
 
 const IssueTable = ({ issues }) => {
   const issueRows = issues.map((issue) => (
